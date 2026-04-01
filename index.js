@@ -94,9 +94,17 @@ const io = new SocketIOServer(server, {
   pingInterval: 25000,
 })
 
+const getTokenFromCookieHeader = (cookieHeader = '') => {
+  return cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith('auth_token='))
+    ?.split('=')[1] || null
+}
+
 // Authentication middleware
 io.use((socket, next) => {
-  const token = socket.handshake.auth?.token
+  const token = socket.handshake.auth?.token || getTokenFromCookieHeader(socket.handshake.headers?.cookie)
   console.log('🔐 Auth attempt, token exists:', !!token)
 
   if (!token) {
